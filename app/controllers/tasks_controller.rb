@@ -1,6 +1,10 @@
 class TasksController < ApplicationController
+  before_action :require_user_logged_in
+
   def index
-    @tasks = Task.all
+    ##@tasks = Task.all
+    @current_user ||= User.find_by(id: session[:user_id])
+    @tasks = current_user.tasks.order(id: :desc).page(params[:page])
   end
 
   def show
@@ -9,17 +13,19 @@ class TasksController < ApplicationController
 
   def new
     @task = Task.new
+    ##@task = current_user.tasks.build(task_params)
   end
 
   def create
-    @task = Task.new(task_params)
+    ##@task = Task.new(task_params)
+    @task = current_user.tasks.build(task_params)
     
     if @task.save
       flash[:success] = 'Taskが正常に登録されました'
       redirect_to @task
     else
       flash[:danger] = 'Taskが登録されませんでした'
-      render :new
+        render :new
     end
 
   end
@@ -53,6 +59,6 @@ class TasksController < ApplicationController
   
   #Strong Parameter
   def task_params
-    params.require(:task).permit(:content, :status)
+    params.require(:task).permit(:content, :status, )
   end
 end
